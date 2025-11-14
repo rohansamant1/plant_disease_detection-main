@@ -1,22 +1,29 @@
-FROM python:3.9
+FROM python:3.9-slim
 
-# Install system dependencies (important for TF)
+# Install minimal system dependencies
 RUN apt-get update && apt-get install -y \
-    python3-dev \
-    build-essential
+    libhdf5-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install TensorFlow 2.10.0 CPU (last version supporting pip)
-RUN pip install tensorflow-cpu==2.10.0
+# Install TensorFlow CPU 2.10.0 (smallest TF version)
+RUN pip install --no-cache-dir tensorflow-cpu==2.10.0
 
-# Copy project
+# Set working directory
 WORKDIR /app
+
+# Copy entire project
 COPY . /app
 
-# Install other dependencies
-RUN pip install -r requirements.txt --no-cache-dir || true
+# Install project dependencies (except TensorFlow)
+RUN sed -i '/tensorflow/d' requirements.txt || true
+RUN sed -i '/tensorflow-cpu/d' requirements.txt || true
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose Flask port
+# Expose port for Railway
 EXPOSE 8000
 
-# Start your app with Gunicorn
+# Run Flask app via gunicorn
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
