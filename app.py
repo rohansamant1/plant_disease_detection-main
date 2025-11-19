@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 app = Flask(__name__)
 
-model = load_model('model.h5', compile=False)
+model = load_model("model_compressed.h5", compile=False)
 print('Model loaded. Check http://127.0.0.1:5000/')
 
 labels = {0: 'Healthy', 1: 'Powdery', 2: 'Rust'}
